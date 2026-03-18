@@ -1,14 +1,15 @@
-import { useState, useEffect, useCallback } from 'react'
-import { useQuery, useMutation, useAction } from 'convex/react'
+import { useState, useEffect } from 'react'
+import { useMutation, useAction } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import { useParams, Link } from 'react-router-dom'
 import { ArrowLeft, Loader2, Save, Sparkles, RefreshCw, Upload, X, Image as ImageIcon, Palette, Type, Layout as LayoutIcon } from 'lucide-react'
-import { ACCENT_COLORS, generateSlug, processImage } from '../lib/utils'
+import { ACCENT_COLORS, processImage } from '../lib/utils'
 import WaitlistPreview from '../components/WaitlistPreview'
+import { useWaitlist } from '../lib/queries'
 
 export default function EditWaitlist() {
     const { id } = useParams()
-    const waitlist = useQuery(api.waitlists.get, { id })
+    const waitlist = useWaitlist(id)
     const updateWaitlist = useMutation(api.waitlists.update)
     const generateUploadUrl = useMutation(api.waitlists.generateUploadUrl)
     const uploadLogo = useMutation(api.waitlists.uploadLogo)
@@ -167,13 +168,13 @@ export default function EditWaitlist() {
         }
     }
 
-    const handleDrop = useCallback(async (e) => {
+    const handleDrop = async (e) => {
         e.preventDefault()
         const file = e.dataTransfer.files?.[0]
         if (!file || !file.type.startsWith('image/')) return
         const fakeEvent = { target: { files: [file] } }
         handleLogoUpload(fakeEvent)
-    }, [id])
+    }
 
     const tones = [
         { key: 'profesional', label: 'Profesional' },

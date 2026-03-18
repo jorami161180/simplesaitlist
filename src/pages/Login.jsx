@@ -7,6 +7,7 @@ import { Zap, User, Loader2, AlertCircle, Mail } from 'lucide-react'
 function LoginWithAuth() {
     const { isAuthenticated } = useConvexAuth()
     const { signIn } = useAuthActions()
+    const allowGuest = import.meta.env.VITE_ENABLE_GUEST === 'true'
 
     if (isAuthenticated) {
         return <Navigate to="/dashboard" replace />
@@ -45,6 +46,10 @@ function LoginWithAuth() {
     }
 
     const handleGuestLogin = async () => {
+        if (!allowGuest) {
+            setError('El modo invitado está desactivado en este entorno.')
+            return
+        }
         setLoading(true)
         setError(null)
         try {
@@ -65,6 +70,7 @@ function LoginWithAuth() {
         setEmail={setEmail}
         onEmailLogin={handleEmailLogin}
         onGuestLogin={handleGuestLogin}
+        allowGuest={allowGuest}
         error={error}
         loading={loading}
         step={step}
@@ -75,10 +81,10 @@ function LoginWithAuth() {
 
 function LoginNoAuth() {
     const alertUser = () => alert("Convex no está configurado. Ejecuta 'npx convex dev' primero.")
-    return <LoginUI onEmailLogin={alertUser} onGuestLogin={alertUser} />
+    return <LoginUI onEmailLogin={alertUser} onGuestLogin={alertUser} allowGuest={false} />
 }
 
-function LoginUI({ email, setEmail, onEmailLogin, onGuestLogin, error, loading, step, setStep, resendTimer }) {
+function LoginUI({ email, setEmail, onEmailLogin, onGuestLogin, allowGuest, error, loading, step, setStep, resendTimer }) {
     if (step === "verify") {
         return (
             <div className="flex items-center justify-center min-h-[80vh] px-4">
@@ -178,20 +184,22 @@ function LoginUI({ email, setEmail, onEmailLogin, onGuestLogin, error, loading, 
                         </div>
                     </div>
 
-                    <button
-                        onClick={onGuestLogin}
-                        disabled={loading}
-                        className="w-full flex items-center justify-center gap-3 glass hover:bg-white/5 border border-white/10 text-gray-300 hover:text-white h-14 rounded-2xl text-sm font-semibold transition-all group"
-                    >
-                        {loading ? (
-                            <Loader2 className="w-5 h-5 animate-spin mx-auto" />
-                        ) : (
-                            <>
-                                <User className="w-5 h-5 group-hover:text-[#3b82f6] transition-colors" />
-                                Modo Invitado (Local)
-                            </>
-                        )}
-                    </button>
+                    {allowGuest && (
+                        <button
+                            onClick={onGuestLogin}
+                            disabled={loading}
+                            className="w-full flex items-center justify-center gap-3 glass hover:bg-white/5 border border-white/10 text-gray-300 hover:text-white h-14 rounded-2xl text-sm font-semibold transition-all group"
+                        >
+                            {loading ? (
+                                <Loader2 className="w-5 h-5 animate-spin mx-auto" />
+                            ) : (
+                                <>
+                                    <User className="w-5 h-5 group-hover:text-[#3b82f6] transition-colors" />
+                                    Modo Invitado (Local)
+                                </>
+                            )}
+                        </button>
+                    )}
                 </div>
 
                 <p className="text-center mt-8 text-xs text-gray-500">

@@ -15,16 +15,12 @@ export const list = query({
         // Get subscriber counts and logo URLs
         const results = await Promise.all(
             waitlists.map(async (w) => {
-                const subscribers = await ctx.db
-                    .query("subscribers")
-                    .withIndex("by_waitlistId", (q) => q.eq("waitlistId", w._id))
-                    .collect();
                 const logoUrl = w.logoStorageId
                     ? await ctx.storage.getUrl(w.logoStorageId)
                     : null;
                 return {
                     ...w,
-                    subscriberCount: subscribers.length,
+                    subscriberCount: w.subscriberCount ?? 0,
                     logoUrl,
                 };
             })
@@ -43,7 +39,7 @@ export const get = query({
         const logoUrl = waitlist.logoStorageId
             ? await ctx.storage.getUrl(waitlist.logoStorageId)
             : null;
-        return { ...waitlist, logoUrl };
+        return { ...waitlist, logoUrl, subscriberCount: waitlist.subscriberCount ?? 0 };
     },
 });
 
@@ -58,7 +54,7 @@ export const getBySlug = query({
         const logoUrl = waitlist.logoStorageId
             ? await ctx.storage.getUrl(waitlist.logoStorageId)
             : null;
-        return { ...waitlist, logoUrl };
+        return { ...waitlist, logoUrl, subscriberCount: waitlist.subscriberCount ?? 0 };
     },
 });
 
@@ -85,6 +81,7 @@ export const create = mutation({
         return await ctx.db.insert("waitlists", {
             userId,
             ...args,
+            subscriberCount: 0,
             createdAt: Date.now(),
         });
     },

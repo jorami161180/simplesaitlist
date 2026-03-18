@@ -1,9 +1,10 @@
-import { useQuery } from 'convex/react'
+import { usePaginatedQuery, useQuery } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import { useParams, Link } from 'react-router-dom'
 import { Copy, Check, ExternalLink, Pencil, Users, CalendarDays, TrendingUp, Download, Loader2, ArrowLeft, Share2 } from 'lucide-react'
 import { useState } from 'react'
 import { getPublicUrl, copyToClipboard, formatDateTime, downloadCSV } from '../lib/utils'
+import { useWaitlist, useWaitlistStats } from '../lib/queries'
 
 function StatCard({ icon: Icon, label, value, color = '#3b82f6' }) {
     return (
@@ -25,11 +26,13 @@ function StatCard({ icon: Icon, label, value, color = '#3b82f6' }) {
 
 export default function WaitlistDetail() {
     const { id } = useParams()
-    const waitlist = useQuery(api.waitlists.get, { id })
-    const subscribers = useQuery(api.subscribers.listByWaitlist, id ? { waitlistId: id } : 'skip')
-    const total = useQuery(api.subscribers.count, id ? { waitlistId: id } : 'skip')
-    const today = useQuery(api.subscribers.countToday, id ? { waitlistId: id } : 'skip')
-    const thisWeek = useQuery(api.subscribers.countThisWeek, id ? { waitlistId: id } : 'skip')
+    const waitlist = useWaitlist(id)
+    const stats = useWaitlistStats(id)
+    const { results: subscribers, status, loadMore } = usePaginatedQuery(
+        api.subscribers.listByWaitlist,
+        { waitlistId: id },
+        { initialNumItems: 50 }
+    )
     const exportData = useQuery(api.subscribers.exportData, id ? { waitlistId: id } : 'skip')
 
     const [copied, setCopied] = useState(false)
@@ -56,6 +59,9 @@ export default function WaitlistDetail() {
     }
 
     const publicUrl = getPublicUrl(waitlist.slug)
+    const total = stats?.total
+    const today = stats?.today
+    const thisWeek = stats?.thisWeek
 
     const handleCopy = async () => {
         const success = await copyToClipboard(publicUrl)
@@ -158,7 +164,7 @@ export default function WaitlistDetail() {
                     )}
                 </div>
 
-                {!subscribers ? (
+                {status === 'LoadingFirstPage' ? (
                     <div className="px-8 py-12 flex justify-center">
                         <Loader2 className="w-6 h-6 text-[#3b82f6] animate-spin" />
                     </div>
@@ -201,6 +207,16 @@ export default function WaitlistDetail() {
                                 ))}
                             </tbody>
                         </table>
+                        {status === 'CanLoadMore' && (
+                            <div className="px-8 py-6 flex justify-center">
+                                <button
+                                    onClick={() => loadMore(50)}
+                                    className="inline-flex items-center gap-2 text-xs font-bold text-gray-400 hover:text-white transition-colors glass px-4 py-2 rounded-xl border border-white/5"
+                                >
+                                    Cargar más
+                                </button>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

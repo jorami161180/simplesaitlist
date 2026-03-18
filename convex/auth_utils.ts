@@ -10,6 +10,9 @@ export async function getUserId(ctx: QueryCtx | MutationCtx): Promise<Id<"users"
     const userId = await getAuthUserId(ctx);
     if (userId) return userId;
 
+    const allowGuest = process.env.CONVEX_ALLOW_GUEST === "true";
+    if (!allowGuest) return null;
+
     // Guest Mode fallback for local development
     const guestEmail = "invitado@local.dev";
     const existingGuest = await ctx.db

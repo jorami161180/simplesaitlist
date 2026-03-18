@@ -10,6 +10,8 @@ function PublicWaitlistWithAuth() {
     const subscribe = useMutation(api.subscribers.subscribe)
 
     const [email, setEmail] = useState('')
+    const [website, setWebsite] = useState('')
+    const [startedAt] = useState(() => Date.now())
     const [status, setStatus] = useState('idle') // idle | loading | success | duplicate | error
     const [errorMsg, setErrorMsg] = useState('')
 
@@ -24,6 +26,8 @@ function PublicWaitlistWithAuth() {
             await subscribe({
                 waitlistId: waitlist._id,
                 email: email.trim(),
+                hp: website,
+                elapsedMs: Date.now() - startedAt,
             })
             setStatus('success')
             setEmail('')
@@ -56,6 +60,8 @@ function PublicWaitlistWithAuth() {
             waitlist={waitlist}
             email={email}
             setEmail={setEmail}
+            website={website}
+            setWebsite={setWebsite}
             status={status}
             setStatus={setStatus}
             errorMsg={errorMsg}
@@ -80,7 +86,7 @@ function PublicWaitlistNotFound({ message = "Esta lista de espera no existe o fu
     )
 }
 
-function PublicWaitlistUI({ waitlist, email, setEmail, status, setStatus, errorMsg, handleSubmit }) {
+function PublicWaitlistUI({ waitlist, email, setEmail, website, setWebsite, status, setStatus, errorMsg, handleSubmit }) {
     const accentColor = waitlist.color || '#3b82f6'
 
     return (
@@ -151,6 +157,18 @@ function PublicWaitlistUI({ waitlist, email, setEmail, status, setStatus, errorM
                         </div>
                     ) : (
                         <form onSubmit={handleSubmit} className="space-y-4">
+                            <div className="hidden" aria-hidden="true">
+                                <label htmlFor="company">Company</label>
+                                <input
+                                    id="company"
+                                    name="company"
+                                    type="text"
+                                    tabIndex={-1}
+                                    autoComplete="off"
+                                    value={website}
+                                    onChange={(e) => setWebsite(e.target.value)}
+                                />
+                            </div>
                             <div className="relative group">
                                 <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
                                     <Mail className="w-5 h-5 text-gray-500 transition-colors group-focus-within:text-white" />

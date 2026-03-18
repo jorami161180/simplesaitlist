@@ -1,9 +1,8 @@
-import { useQuery } from 'convex/react'
-import { api } from '../../convex/_generated/api'
 import { Link } from 'react-router-dom'
 import { Plus, Rocket, Users, Copy, Check, LayoutGrid } from 'lucide-react'
 import { useState } from 'react'
 import { getPublicUrl, copyToClipboard } from '../lib/utils'
+import { useWaitlists } from '../lib/queries'
 
 function WaitlistCard({ waitlist }) {
     const [copied, setCopied] = useState(false)
@@ -71,7 +70,7 @@ function WaitlistCard({ waitlist }) {
 }
 
 export default function Dashboard() {
-    const waitlists = useQuery(api.waitlists.list)
+    const waitlists = useWaitlists()
 
     return (
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16">

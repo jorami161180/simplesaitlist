@@ -4,11 +4,16 @@ import { useConvexAuth } from '../lib/hooks'
 import { Zap, LogOut, LayoutDashboard, CreditCard, ChevronRight } from 'lucide-react'
 
 function LayoutWithAuth() {
-    const { isAuthenticated, isLoading } = useConvexAuth()
+    const { isAuthenticated, isLoading, isGuest } = useConvexAuth()
     const { signOut } = useAuthActions()
     const navigate = useNavigate()
 
     const handleSignOut = async () => {
+        if (isGuest) {
+            localStorage.removeItem('simplewaitlist_guest')
+            navigate('/')
+            return
+        }
         await signOut()
         navigate('/')
     }
@@ -27,6 +32,7 @@ function LayoutNoAuth() {
     const navigate = useNavigate()
 
     const handleSignOut = () => {
+        localStorage.removeItem('simplewaitlist_guest')
         navigate('/')
     }
 
