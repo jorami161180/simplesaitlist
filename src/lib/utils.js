@@ -130,3 +130,18 @@ export function downloadCSV(data, filename) {
     link.click();
     document.body.removeChild(link);
 }
+
+/**
+ * Download a text blob as file
+ */
+export function downloadTextFile(content, filename, type = 'text/plain;charset=utf-8') {
+    const blob = new Blob([content], { type })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.setAttribute('href', url)
+    link.setAttribute('download', filename)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+}

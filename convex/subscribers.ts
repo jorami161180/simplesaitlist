@@ -1,7 +1,8 @@
-import { query, mutation } from "./_generated/server";
+import { query, mutation, action } from "./_generated/server";
 import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
 import { getUserId } from "./auth_utils";
+import { api } from "./_generated/api";
 
 async function assertWaitlistOwner(ctx: any, waitlistId: any) {
     const userId = await getUserId(ctx);
@@ -21,7 +22,38 @@ async function countSince(ctx: any, waitlistId: any, startTime: number) {
     return subscribers.length;
 }
 
+function getDayKey(date: Date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+}
+
+function getWeekKey(date: Date) {
+    const day = date.getDay();
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+    const startOfWeek = new Date(date.getFullYear(), date.getMonth(), diff);
+    return getDayKey(startOfWeek);
+}
+
 export const listByWaitlist = query({
+    args: {
+        waitlistId: v.id("waitlists"),
+        paginationOpts: paginationOptsValidator,
+    },
+    handler: async (ctx, args) => {
+        const waitlist = await assertWaitlistOwner(ctx, args.waitlistId);
+        if (!waitlist) return { page: [], isDone: true, continueCursor: null };
+
+        return await ctx.db
+            .query("subscribers")
+            .withIndex("by_waitlistId", (q) => q.eq("waitlistId", args.waitlistId))
+            .order("desc")
+            .paginate(args.paginationOpts);
+    },
+});
+
+export const exportPage = query({
     args: {
         waitlistId: v.id("waitlists"),
         paginationOpts: paginationOptsValidator,
@@ -91,8 +123,23 @@ export const subscribe = mutation({
             createdAt: Date.now(),
         });
 
+        const now = new Date();
+        const dayKey = getDayKey(now);
+        const weekKey = getWeekKey(now);
+
+        const nextDayCount = waitlist.statsDayKey === dayKey
+            ? (waitlist.statsDayCount ?? 0) + 1
+            : 1;
+        const nextWeekCount = waitlist.statsWeekKey === weekKey
+            ? (waitlist.statsWeekCount ?? 0) + 1
+            : 1;
+
         await ctx.db.patch(args.waitlistId, {
             subscriberCount: (waitlist.subscriberCount ?? 0) + 1,
+            statsDayKey: dayKey,
+            statsDayCount: nextDayCount,
+            statsWeekKey: weekKey,
+            statsWeekCount: nextWeekCount,
         });
 
         return { success: true };
@@ -148,9 +195,8 @@ export const stats = query({
 
         const now = new Date();
         const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-        const day = now.getDay();
-        const diff = now.getDate() - day + (day === 0 ? -6 : 1);
-        const startOfWeek = new Date(now.getFullYear(), now.getMonth(), diff).getTime();
+        const dayKey = getDayKey(now);
+        const weekKey = getWeekKey(now);
 
         const total = typeof waitlist.subscriberCount === "number"
             ? waitlist.subscriberCount
@@ -159,12 +205,55 @@ export const stats = query({
                 .withIndex("by_waitlistId", (q: any) => q.eq("waitlistId", args.waitlistId))
                 .collect()).length;
 
-        const [today, thisWeek] = await Promise.all([
-            countSince(ctx, args.waitlistId, startOfDay),
-            countSince(ctx, args.waitlistId, startOfWeek),
-        ]);
+        const today = waitlist.statsDayKey === dayKey
+            ? (waitlist.statsDayCount ?? 0)
+            : await countSince(ctx, args.waitlistId, startOfDay);
+
+        let thisWeek = 0;
+        if (waitlist.statsWeekKey === weekKey) {
+            thisWeek = waitlist.statsWeekCount ?? 0;
+        } else {
+            const day = now.getDay();
+            const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+            const startOfWeek = new Date(now.getFullYear(), now.getMonth(), diff).getTime();
+            thisWeek = await countSince(ctx, args.waitlistId, startOfWeek);
+        }
 
         return { total, today, thisWeek };
+    },
+});
+
+export const exportCsv = action({
+    args: {
+        waitlistId: v.id("waitlists"),
+        maxRows: v.optional(v.float64()),
+    },
+    handler: async (ctx, args) => {
+        const waitlist = await ctx.runQuery(api.waitlists.get, { id: args.waitlistId });
+        if (!waitlist) throw new Error("Not authorized");
+
+        const limit = Math.min(Math.max(args.maxRows ?? 10000, 1), 50000);
+        let cursor: string | null = null;
+        let remaining = limit;
+        const rows: string[] = ["Email,Fecha de inscripción"]; 
+
+        while (remaining > 0) {
+            const page = await ctx.runQuery(api.subscribers.exportPage, {
+                waitlistId: args.waitlistId,
+                paginationOpts: { numItems: Math.min(remaining, 500), cursor },
+            });
+
+            for (const s of page.page) {
+                const date = new Date(s.createdAt).toISOString();
+                rows.push(`${s.email},${date}`);
+            }
+
+            remaining -= page.page.length;
+            if (page.isDone || page.page.length === 0) break;
+            cursor = page.continueCursor;
+        }
+
+        return { csv: rows.join("\n"), total: rows.length - 1 };
     },
 });
 

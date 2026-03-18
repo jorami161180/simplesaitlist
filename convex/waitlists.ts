@@ -82,6 +82,8 @@ export const create = mutation({
             userId,
             ...args,
             subscriberCount: 0,
+            statsDayCount: 0,
+            statsWeekCount: 0,
             createdAt: Date.now(),
         });
     },

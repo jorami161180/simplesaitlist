@@ -1,9 +1,9 @@
-import { usePaginatedQuery, useQuery } from 'convex/react'
+import { usePaginatedQuery, useAction } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import { useParams, Link } from 'react-router-dom'
 import { Copy, Check, ExternalLink, Pencil, Users, CalendarDays, TrendingUp, Download, Loader2, ArrowLeft, Share2 } from 'lucide-react'
 import { useState } from 'react'
-import { getPublicUrl, copyToClipboard, formatDateTime, downloadCSV } from '../lib/utils'
+import { getPublicUrl, copyToClipboard, formatDateTime, downloadTextFile } from '../lib/utils'
 import { useWaitlist, useWaitlistStats } from '../lib/queries'
 
 function StatCard({ icon: Icon, label, value, color = '#3b82f6' }) {
@@ -33,9 +33,10 @@ export default function WaitlistDetail() {
         { waitlistId: id },
         { initialNumItems: 50 }
     )
-    const exportData = useQuery(api.subscribers.exportData, id ? { waitlistId: id } : 'skip')
+    const exportCsv = useAction(api.subscribers.exportCsv)
 
     const [copied, setCopied] = useState(false)
+    const [exporting, setExporting] = useState(false)
 
     if (waitlist === undefined) {
         return (
@@ -71,9 +72,14 @@ export default function WaitlistDetail() {
         }
     }
 
-    const handleExport = () => {
-        if (exportData) {
-            downloadCSV(exportData, `${waitlist.slug}-subscribers.csv`)
+    const handleExport = async () => {
+        if (!waitlist) return
+        setExporting(true)
+        try {
+            const result = await exportCsv({ waitlistId: waitlist._id, maxRows: 10000 })
+            downloadTextFile(result.csv, `${waitlist.slug}-subscribers.csv`, 'text/csv;charset=utf-8')
+        } finally {
+            setExporting(false)
         }
     }
 
@@ -156,10 +162,11 @@ export default function WaitlistDetail() {
                     {subscribers && subscribers.length > 0 && (
                         <button
                             onClick={handleExport}
-                            className="inline-flex items-center gap-2 text-xs font-bold text-gray-400 hover:text-white transition-colors glass px-4 py-2 rounded-xl border border-white/5"
+                            disabled={exporting}
+                            className="inline-flex items-center gap-2 text-xs font-bold text-gray-400 hover:text-white transition-colors glass px-4 py-2 rounded-xl border border-white/5 disabled:opacity-60"
                         >
-                            <Download className="w-4 h-4" />
-                            Exportar CSV
+                            {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                            {exporting ? 'Exportando...' : 'Exportar CSV'}
                         </button>
                     )}
                 </div>

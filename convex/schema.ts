@@ -23,6 +23,10 @@ export default defineSchema({
         subtitle: v.string(),
         logoStorageId: v.optional(v.id("_storage")),
         subscriberCount: v.optional(v.float64()),
+        statsDayKey: v.optional(v.string()),
+        statsDayCount: v.optional(v.float64()),
+        statsWeekKey: v.optional(v.string()),
+        statsWeekCount: v.optional(v.float64()),
         createdAt: v.float64(),
     })
         .index("by_userId", ["userId"])
