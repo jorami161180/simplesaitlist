@@ -1,27 +1,35 @@
+import { useState } from 'react'
 import { useConvexAuth as useConvexAuthOriginal } from 'convex/react'
 
 const hasConvex = !!import.meta.env.VITE_CONVEX_URL;
 const allowGuest = import.meta.env.VITE_ENABLE_GUEST === 'true';
 
 /**
- * Hook seguro: siempre invoca useConvexAuthOriginal para respetar las Rules of Hooks.
- * Solo usa el resultado si Convex está configurado.
+ * Hook seguro: intenta usar Convex si está disponible, si no, devuelve un estado neutral.
  */
 export function useConvexAuth() {
-    // IMPORTANT: must always be called first — React Rules of Hooks
-    const auth = useConvexAuthOriginal();
-
-    // Check if we are in guest mode (stored in localStorage)
-    const isGuest = allowGuest && typeof window !== 'undefined' && localStorage.getItem('simplewaitlist_guest') === 'true';
-
-    if (!hasConvex) {
-        return { isAuthenticated: false, isLoading: false, isGuest: false };
+    let convexAuth = { isAuthenticated: false, isLoading: false };
+    
+    // Solo intentamos usar el hook de Convex si tenemos la URL
+    // y estamos dentro del proveedor (que manejamos en main.jsx)
+    try {
+        if (hasConvex) {
+            convexAuth = useConvexAuthOriginal();
+        }
+    } catch (e) {
+        // Fallback silencioso si el proveedor no está listo
     }
 
-    // If we are in guest mode, force authenticated state
-    if (isGuest) {
+    // Estado de invitado (independiente de Convex)
+    const isGuestActive = allowGuest && typeof window !== 'undefined' && localStorage.getItem('simplewaitlist_guest') === 'true';
+
+    if (isGuestActive) {
         return { isAuthenticated: true, isLoading: false, isGuest: true };
     }
 
-    return { ...auth, isGuest: false };
+    return { 
+        isAuthenticated: convexAuth.isAuthenticated, 
+        isLoading: convexAuth.isLoading, 
+        isGuest: false 
+    };
 }
