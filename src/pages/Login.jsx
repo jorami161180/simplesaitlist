@@ -9,15 +9,16 @@ function LoginWithAuth() {
     const { signIn } = useAuthActions()
     const allowGuest = import.meta.env.VITE_ENABLE_GUEST === 'true'
 
-    if (isAuthenticated) {
-        return <Navigate to="/dashboard" replace />
-    }
-
+    // IMPORTANT: all hooks must be declared before any conditional return
     const [error, setError] = useState(null)
     const [loading, setLoading] = useState(false)
     const [email, setEmail] = useState("")
     const [step, setStep] = useState("signIn")
     const [resendTimer, setResendTimer] = useState(0)
+
+    if (isAuthenticated) {
+        return <Navigate to="/dashboard" replace />
+    }
 
     const handleEmailLogin = async (e) => {
         if (e) e.preventDefault()
@@ -53,7 +54,6 @@ function LoginWithAuth() {
         setLoading(true)
         setError(null)
         try {
-            // Simulate a small delay for premium feel
             await new Promise(r => setTimeout(r, 600));
             localStorage.setItem('simplewaitlist_guest', 'true');
             window.location.href = "/dashboard";

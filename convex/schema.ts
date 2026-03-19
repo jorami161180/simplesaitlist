@@ -11,7 +11,7 @@ export default defineSchema({
         image: v.optional(v.string()),
         emailVerificationTime: v.optional(v.float64()),
         isAnonymous: v.optional(v.boolean()),
-    }).index("by_email", ["email"]),
+    }).index("email", ["email"]),
 
     waitlists: defineTable({
         userId: v.id("users"),

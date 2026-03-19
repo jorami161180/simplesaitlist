@@ -17,7 +17,7 @@ export async function getUserId(ctx: QueryCtx | MutationCtx): Promise<Id<"users"
     const guestEmail = "invitado@local.dev";
     const existingGuest = await ctx.db
         .query("users")
-        .withIndex("by_email", (q) => q.eq("email", guestEmail))
+        .withIndex("email", (q) => q.eq("email", guestEmail))
         .unique();
 
     if (existingGuest) return existingGuest._id;
