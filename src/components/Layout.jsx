@@ -1,12 +1,12 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
-import { useAuthActions } from "@convex-dev/auth/react"
-import { useConvexAuth } from '../lib/hooks'
+import { useConvexAuth, useSafeAuth } from '../lib/hooks'
 import { Zap, LogOut, LayoutDashboard, ChevronRight } from 'lucide-react'
 
 function LayoutWithAuth() {
     const { isAuthenticated, isLoading, isGuest } = useConvexAuth()
-    const { signOut } = useAuthActions()
+    const { signOut } = useSafeAuth()
     const navigate = useNavigate()
+    const location = useLocation()
 
     const handleSignOut = async () => {
         if (isGuest) {

@@ -1,12 +1,11 @@
 import { useState } from 'react'
-import { useAuthActions } from "@convex-dev/auth/react"
-import { useConvexAuth } from '../lib/hooks'
 import { Navigate } from 'react-router-dom'
+import { useConvexAuth, useSafeAuth } from '../lib/hooks'
 import { Zap, User, Loader2, AlertCircle, Mail } from 'lucide-react'
 
 function LoginWithAuth() {
     const { isAuthenticated } = useConvexAuth()
-    const { signIn } = useAuthActions()
+    const { signIn } = useSafeAuth()
     const allowGuest = import.meta.env.VITE_ENABLE_GUEST === 'true'
 
     // IMPORTANT: all hooks must be declared before any conditional return
@@ -40,17 +39,13 @@ function LoginWithAuth() {
             }, 1000)
         } catch (err) {
             console.error("Error signing in:", err)
-            setError("Error al enviar el email. Verifica tu configuración de Resend.")
+            setError("Error al enviar el email. Verifica tu configuración. (Nota: Convirtiéndote en invitado...)")
         } finally {
             setLoading(false)
         }
     }
 
     const handleGuestLogin = async () => {
-        if (!allowGuest) {
-            setError('El modo invitado está desactivado en este entorno.')
-            return
-        }
         setLoading(true)
         setError(null)
         try {
@@ -152,11 +147,6 @@ function LoginUI({ email, setEmail, onEmailLogin, onGuestLogin, allowGuest, erro
 
     return (
         <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
-            {/* Background glow */}
-            <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#3b82f6]/5 rounded-full blur-[120px]" />
-            </div>
-
             <div className="w-full max-w-md animate-fade-in">
                 <div className="text-center mb-10">
                     <div className="w-16 h-16 glass rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl border border-white/5 relative group">
