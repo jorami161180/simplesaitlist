@@ -6,9 +6,9 @@ import { v } from "convex/values";
 
 async function callGemini(apiKey: string, prompt: string): Promise<string> {
     const models = [
-        "gemini-2.0-flash-lite",
-        "gemini-2.0-flash",
-        "gemini-1.5-flash",
+        "gemini-2.0-flash",           // Prioridad: 2.0 estable
+        "gemini-1.5-flash",           // Estándar 1.5
+        "gemini-1.5-flash-latest",    // Alias de la última versión
     ];
     const baseUrl = "https://generativelanguage.googleapis.com/v1beta";
     let lastError = "";
