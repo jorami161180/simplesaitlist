@@ -1,7 +1,7 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuthActions } from "@convex-dev/auth/react"
 import { useConvexAuth } from '../lib/hooks'
-import { Zap, LogOut, LayoutDashboard, CreditCard, ChevronRight } from 'lucide-react'
+import { Zap, LogOut, LayoutDashboard, ChevronRight } from 'lucide-react'
 
 function LayoutWithAuth() {
     const { isAuthenticated, isLoading, isGuest } = useConvexAuth()
@@ -15,24 +15,6 @@ function LayoutWithAuth() {
             return
         }
         await signOut()
-        navigate('/')
-    }
-
-    return (
-        <LayoutUI
-            isAuthenticated={isAuthenticated}
-            isLoading={isLoading}
-            onSignOut={handleSignOut}
-        />
-    )
-}
-
-function LayoutNoAuth() {
-    const { isAuthenticated, isLoading } = useConvexAuth()
-    const navigate = useNavigate()
-
-    const handleSignOut = () => {
-        localStorage.removeItem('simplewaitlist_guest')
         navigate('/')
     }
 
@@ -98,7 +80,7 @@ function LayoutUI({ isAuthenticated, isLoading, onSignOut }) {
                                         <div className="w-px h-4 bg-white/10 mx-1 hidden sm:block" />
                                         <button
                                             onClick={onSignOut}
-                                            className="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-red-400 transition-all px-4 py-2 rounded-xl hover:bg-red-400/5 group"
+                                            className="flex items-center gap-2 text-sm font-bold text-gray-400 hover:text-red-400 transition-all px-4 py-2 rounded-xl hover:bg-red-400/5 group"
                                         >
                                             <LogOut className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
                                             <span className="hidden sm:inline">Salir</span>
@@ -121,7 +103,7 @@ function LayoutUI({ isAuthenticated, isLoading, onSignOut }) {
                 </div>
             </header>
 
-            {/* Main */}
+            {/* Main Content */}
             <main className="flex-1">
                 <Outlet />
             </main>
@@ -172,8 +154,5 @@ function LayoutUI({ isAuthenticated, isLoading, onSignOut }) {
 }
 
 export default function Layout() {
-    if (!import.meta.env.VITE_CONVEX_URL) {
-        return <LayoutNoAuth />
-    }
     return <LayoutWithAuth />
 }
