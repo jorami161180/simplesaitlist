@@ -80,8 +80,35 @@ function LoginWithAuth() {
 }
 
 function LoginNoAuth() {
-    const alertUser = () => alert("Convex no está configurado. Ejecuta 'npx convex dev' primero.")
-    return <LoginUI onEmailLogin={alertUser} onGuestLogin={alertUser} allowGuest={false} />
+    const allowGuest = import.meta.env.VITE_ENABLE_GUEST === 'true'
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState(null)
+
+    const handleGuestLogin = async () => {
+        setLoading(true)
+        try {
+            await new Promise(r => setTimeout(r, 600));
+            localStorage.setItem('simplewaitlist_guest', 'true');
+            window.location.href = "/dashboard";
+        } catch (err) {
+            setError(err.message)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const alertUser = (e) => {
+        if (e) e.preventDefault()
+        alert("Convex no está configurado. Por favor, añade VITE_CONVEX_URL en Vercel.")
+    }
+
+    return <LoginUI 
+        onEmailLogin={alertUser} 
+        onGuestLogin={handleGuestLogin} 
+        allowGuest={allowGuest}
+        loading={loading}
+        error={error}
+    />
 }
 
 function LoginUI({ email, setEmail, onEmailLogin, onGuestLogin, allowGuest, error, loading, step, setStep, resendTimer }) {

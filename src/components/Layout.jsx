@@ -53,50 +53,46 @@ function LayoutUI({ isAuthenticated, isLoading, onSignOut }) {
                     </Link>
 
                     <nav className="flex items-center gap-2 sm:gap-6">
-                        {!isLoading && (
-                            <>
+                        <Link
+                            to="/pricing"
+                            className={`text-sm font-bold transition-colors px-4 py-2 rounded-xl border border-transparent ${location.pathname === '/pricing'
+                                ? 'text-white bg-white/5 border-white/10'
+                                : 'text-gray-400 hover:text-white hover:bg-white/5'
+                                }`}
+                        >
+                            Precios
+                        </Link>
+
+                        {isAuthenticated ? (
+                            <div className="flex items-center gap-2">
                                 <Link
-                                    to="/pricing"
-                                    className={`text-sm font-bold transition-colors px-4 py-2 rounded-xl border border-transparent ${location.pathname === '/pricing'
+                                    to="/dashboard"
+                                    className={`flex items-center gap-2 text-sm font-bold transition-all px-4 py-2 rounded-xl border border-transparent ${location.pathname === '/dashboard'
                                         ? 'text-white bg-white/5 border-white/10'
-                                        : 'text-gray-400 hover:text-white hover:bg-white/5'
+                                        : 'text-gray-400 hover:text-white hover:bg-white/5 font-bold'
                                         }`}
                                 >
-                                    Precios
+                                    <LayoutDashboard className="w-4 h-4" />
+                                    <span className="hidden sm:inline">Dashboard</span>
                                 </Link>
-
-                                {isAuthenticated ? (
-                                    <div className="flex items-center gap-2">
-                                        <Link
-                                            to="/dashboard"
-                                            className={`flex items-center gap-2 text-sm font-bold transition-all px-4 py-2 rounded-xl border border-transparent ${location.pathname === '/dashboard'
-                                                ? 'text-white bg-white/5 border-white/10'
-                                                : 'text-gray-400 hover:text-white hover:bg-white/5 font-bold'
-                                                }`}
-                                        >
-                                            <LayoutDashboard className="w-4 h-4" />
-                                            <span className="hidden sm:inline">Dashboard</span>
-                                        </Link>
-                                        <div className="w-px h-4 bg-white/10 mx-1 hidden sm:block" />
-                                        <button
-                                            onClick={onSignOut}
-                                            className="flex items-center gap-2 text-sm font-bold text-gray-400 hover:text-red-400 transition-all px-4 py-2 rounded-xl hover:bg-red-400/5 group"
-                                        >
-                                            <LogOut className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-                                            <span className="hidden sm:inline">Salir</span>
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <>
-                                        <Link
-                                            to="/login"
-                                            className="flex items-center gap-2 bg-[#3b82f6] hover:bg-[#2563eb] text-white px-6 py-2.5 rounded-2xl transition-all font-extrabold text-sm shadow-xl shadow-[#3b82f6]/20 hover:scale-105"
-                                        >
-                                            Empezar
-                                            <ChevronRight className="w-4 h-4" />
-                                        </Link>
-                                    </>
-                                )}
+                                <div className="w-px h-4 bg-white/10 mx-1 hidden sm:block" />
+                                <button
+                                    onClick={onSignOut}
+                                    className="flex items-center gap-2 text-sm font-bold text-gray-400 hover:text-red-400 transition-all px-4 py-2 rounded-xl hover:bg-red-400/5 group"
+                                >
+                                    <LogOut className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+                                    <span className="hidden sm:inline">Salir</span>
+                                </button>
+                            </div>
+                        ) : (
+                            <>
+                                <Link
+                                    to="/login"
+                                    className="flex items-center gap-2 bg-[#3b82f6] hover:bg-[#2563eb] text-white px-6 py-2.5 rounded-2xl transition-all font-extrabold text-sm shadow-xl shadow-[#3b82f6]/20 hover:scale-105"
+                                >
+                                    Empezar
+                                    <ChevronRight className="w-4 h-4" />
+                                </Link>
                             </>
                         )}
                     </nav>

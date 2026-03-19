@@ -27,11 +27,17 @@ export function useConvexAuth() {
         return { isAuthenticated: true, isLoading: false, isGuest: true };
     }
 
+    // Forzamos isLoading a false después de 5 segundos para evitar bloqueos
+    const [timedOut, setTimedOut] = useState(false);
+    useEffect(() => {
+        const timer = setTimeout(() => setTimedOut(true), 5000);
+        return () => clearTimeout(timer);
+    }, []);
+
     // De lo contrario, usamos el estado real de Convex
-    // Pero si no hay URL configurada, forzamos isLoading: false para que la UI no se bloquee
     return {
         isAuthenticated: auth.isAuthenticated,
-        isLoading: hasConvexUrl ? auth.isLoading : false,
+        isLoading: (hasConvexUrl && !timedOut) ? auth.isLoading : false,
         isGuest: false
     };
 }
