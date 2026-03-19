@@ -6,29 +6,16 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App.jsx'
 import './index.css'
 
-const convexUrl = import.meta.env.VITE_CONVEX_URL;
-const convex = convexUrl ? new ConvexReactClient(convexUrl) : null;
+// URL por defecto para evitar que el cliente de Convex explote si falta la variable
+const convexUrl = import.meta.env.VITE_CONVEX_URL || "https://dummy.convex.cloud";
+const convex = new ConvexReactClient(convexUrl);
 
-function Root() {
-    if (!convex) {
-        return (
-            <BrowserRouter>
-                <App />
-            </BrowserRouter>
-        )
-    }
-
-    return (
+ReactDOM.createRoot(document.getElementById('root')).render(
+    <React.StrictMode>
         <ConvexAuthProvider client={convex}>
             <BrowserRouter>
                 <App />
             </BrowserRouter>
         </ConvexAuthProvider>
-    )
-}
-
-ReactDOM.createRoot(document.getElementById('root')).render(
-    <React.StrictMode>
-        <Root />
     </React.StrictMode>,
 )

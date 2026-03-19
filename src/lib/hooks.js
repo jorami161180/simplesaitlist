@@ -1,35 +1,37 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useConvexAuth as useConvexAuthOriginal } from 'convex/react'
 
-const hasConvex = !!import.meta.env.VITE_CONVEX_URL;
+const hasConvexUrl = !!import.meta.env.VITE_CONVEX_URL;
 const allowGuest = import.meta.env.VITE_ENABLE_GUEST === 'true';
 
 /**
- * Hook seguro: intenta usar Convex si está disponible, si no, devuelve un estado neutral.
+ * Hook seguro para autenticación.
  */
 export function useConvexAuth() {
-    let convexAuth = { isAuthenticated: false, isLoading: false };
-    
-    // Solo intentamos usar el hook de Convex si tenemos la URL
-    // y estamos dentro del proveedor (que manejamos en main.jsx)
-    try {
-        if (hasConvex) {
-            convexAuth = useConvexAuthOriginal();
+    // Siempre llamamos al hook original para cumplir las Rules of Hooks.
+    // Si no hay provider, esto podría fallar, pero main.jsx ahora siempre pone uno.
+    const auth = useConvexAuthOriginal();
+
+    // Estado local para el invitado (persistencia simple)
+    const [isGuest, setIsGuest] = useState(false);
+
+    useEffect(() => {
+        if (allowGuest && typeof window !== 'undefined') {
+            const guestStatus = localStorage.getItem('simplewaitlist_guest') === 'true';
+            setIsGuest(guestStatus);
         }
-    } catch (e) {
-        // Fallback silencioso si el proveedor no está listo
-    }
+    }, []);
 
-    // Estado de invitado (independiente de Convex)
-    const isGuestActive = allowGuest && typeof window !== 'undefined' && localStorage.getItem('simplewaitlist_guest') === 'true';
-
-    if (isGuestActive) {
+    // Si somos invitados, forzamos el estado de autenticado para las rutas protegidas
+    if (isGuest) {
         return { isAuthenticated: true, isLoading: false, isGuest: true };
     }
 
-    return { 
-        isAuthenticated: convexAuth.isAuthenticated, 
-        isLoading: convexAuth.isLoading, 
-        isGuest: false 
+    // De lo contrario, usamos el estado real de Convex
+    // Pero si no hay URL configurada, forzamos isLoading: false para que la UI no se bloquee
+    return {
+        isAuthenticated: auth.isAuthenticated,
+        isLoading: hasConvexUrl ? auth.isLoading : false,
+        isGuest: false
     };
 }
