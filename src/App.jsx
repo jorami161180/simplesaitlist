@@ -9,6 +9,7 @@ import CreateWaitlist from './pages/CreateWaitlist'
 import WaitlistDetail from './pages/WaitlistDetail'
 import EditWaitlist from './pages/EditWaitlist'
 import PublicWaitlist from './pages/PublicWaitlist'
+import Debug from './pages/Debug'
 
 export default function App() {
     return (
@@ -22,6 +23,7 @@ export default function App() {
                 <Route path="/" element={<Landing />} />
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/debug" element={<Debug />} />
 
                 {/* Protected pages */}
                 <Route element={<AuthGuard />}>
