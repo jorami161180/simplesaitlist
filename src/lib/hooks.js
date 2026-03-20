@@ -22,11 +22,6 @@ export function useConvexAuth() {
         }
     }, []);
 
-    // Si somos invitados, forzamos el estado de autenticado para las rutas protegidas
-    if (isGuest) {
-        return { isAuthenticated: true, isLoading: false, isGuest: true };
-    }
-
     // Forzamos isLoading a false después de 5 segundos para evitar bloqueos
     const [timedOut, setTimedOut] = useState(false);
     useEffect(() => {
@@ -34,10 +29,29 @@ export function useConvexAuth() {
         return () => clearTimeout(timer);
     }, []);
 
+    // Si somos invitados, forzamos el estado de autenticado para las rutas protegidas
+    if (isGuest) {
+        return { isAuthenticated: true, isLoading: false, isGuest: true };
+    }
+
     // De lo contrario, usamos el estado real de Convex
     return {
         isAuthenticated: auth.isAuthenticated,
         isLoading: (hasConvexUrl && !timedOut) ? auth.isLoading : false,
         isGuest: false
     };
+}
+
+// Hook seguro para acciones de autenticación que no crashean si falta el contexto
+export function useSafeAuth() {
+    try {
+        const { signIn, signOut } = useAuthActions();
+        return { signIn, signOut };
+    } catch (e) {
+        console.warn("Auth context not found, using dummy auth actions");
+        return {
+            signIn: () => Promise.reject("Convex not configured"),
+            signOut: () => Promise.resolve()
+        };
+    }
 }

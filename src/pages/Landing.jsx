@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useConvexAuth } from '../lib/hooks'
-import { ArrowRight, Zap, Clock, Mail, Sparkles, Palette, Download } from 'lucide-react'
+import { ArrowRight, Zap, Clock, Mail, Sparkles, Palette, Download, ChevronRight } from 'lucide-react'
 
 export default function Landing() {
     const { isAuthenticated } = useConvexAuth()
@@ -67,11 +67,11 @@ export default function Landing() {
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-5">
                         <Link
-                            to={isAuthenticated ? '/dashboard' : '/login'}
+                            to="/login"
                             className="group relative inline-flex items-center gap-2 bg-[#3b82f6] hover:bg-[#2563eb] text-white px-10 py-4 rounded-2xl text-lg font-bold transition-all hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-[#3b82f6]/20"
                         >
                             Empezar ahora — Es gratis
-                            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                            <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                         </Link>
                         <Link
                             to="/pricing"
@@ -115,7 +115,7 @@ export default function Landing() {
                         Únete a los creadores que están validando sus ideas en tiempo récord con SimpleWaitlist.
                     </p>
                     <Link
-                        to={isAuthenticated ? '/dashboard' : '/login'}
+                        to="/login"
                         className="group relative z-10 inline-flex items-center gap-2 bg-white text-black hover:bg-gray-100 px-10 py-4 rounded-2xl text-lg font-bold transition-all hover:scale-[1.02] shadow-2xl"
                     >
                         Crear mi primera página

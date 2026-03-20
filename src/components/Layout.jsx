@@ -2,11 +2,10 @@ import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useConvexAuth, useSafeAuth } from '../lib/hooks'
 import { Zap, LogOut, LayoutDashboard, ChevronRight } from 'lucide-react'
 
-function LayoutWithAuth() {
+function LayoutWithAuth({ children }) {
     const { isAuthenticated, isLoading, isGuest } = useConvexAuth()
     const { signOut } = useSafeAuth()
     const navigate = useNavigate()
-    const location = useLocation()
 
     const handleSignOut = async () => {
         if (isGuest) {
@@ -23,16 +22,18 @@ function LayoutWithAuth() {
             isAuthenticated={isAuthenticated}
             isLoading={isLoading}
             onSignOut={handleSignOut}
-        />
+        >
+            {children}
+        </LayoutUI>
     )
 }
 
-function LayoutUI({ isAuthenticated, isLoading, onSignOut }) {
+function LayoutUI({ isAuthenticated, isLoading, onSignOut, children }) {
     const location = useLocation()
     const isPublicWaitlist = location.pathname.startsWith('/w/')
 
     if (isPublicWaitlist) {
-        return <Outlet />
+        return children || <Outlet />
     }
 
     return (
@@ -88,7 +89,7 @@ function LayoutUI({ isAuthenticated, isLoading, onSignOut }) {
                             <>
                                 <Link
                                     to="/login"
-                                    className="flex items-center gap-2 bg-[#3b82f6] hover:bg-[#2563eb] text-white px-6 py-2.5 rounded-2xl transition-all font-extrabold text-sm shadow-xl shadow-[#3b82f6]/20 hover:scale-105"
+                                    className="hidden sm:flex items-center gap-2 bg-[#3b82f6] hover:bg-[#2563eb] text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[#3b82f6]/20"
                                 >
                                     Empezar
                                     <ChevronRight className="w-4 h-4" />
@@ -101,7 +102,7 @@ function LayoutUI({ isAuthenticated, isLoading, onSignOut }) {
 
             {/* Main Content */}
             <main className="flex-1">
-                <Outlet />
+                {children || <Outlet />}
             </main>
 
             {/* Footer */}
@@ -149,6 +150,6 @@ function LayoutUI({ isAuthenticated, isLoading, onSignOut }) {
     )
 }
 
-export default function Layout() {
-    return <LayoutWithAuth />
+export default function Layout({ children }) {
+    return <LayoutWithAuth>{children}</LayoutWithAuth>
 }

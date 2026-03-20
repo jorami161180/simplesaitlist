@@ -2,7 +2,7 @@ import { useConvexAuth } from '../lib/hooks'
 import { Outlet, Navigate } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
 
-export default function AuthGuard() {
+export default function AuthGuard({ children }) {
     const { isAuthenticated, isLoading } = useConvexAuth()
 
     if (isLoading) {
@@ -17,5 +17,5 @@ export default function AuthGuard() {
         return <Navigate to="/login" replace />
     }
 
-    return <Outlet />
+    return children || <Outlet />
 }

@@ -14,25 +14,15 @@ import Debug from './pages/Debug'
 export default function App() {
     return (
         <Routes>
-            {/* Public waitlist page — no layout wrapper */}
+            <Route path="/" element={<Layout><Landing /></Layout>} />
+            <Route path="/pricing" element={<Layout><Pricing /></Layout>} />
+            <Route path="/login" element={<Layout><Login /></Layout>} />
+            <Route path="/debug" element={<Layout><Debug /></Layout>} />
+            <Route path="/dashboard" element={<AuthGuard><Layout><Dashboard /></Layout></AuthGuard>} />
+            <Route path="/create" element={<AuthGuard><Layout><CreateWaitlist /></Layout></AuthGuard>} />
+            <Route path="/waitlist/:id" element={<AuthGuard><Layout><WaitlistDetail /></Layout></AuthGuard>} />
+            <Route path="/waitlist/:id/edit" element={<AuthGuard><Layout><EditWaitlist /></Layout></AuthGuard>} />
             <Route path="/w/:slug" element={<PublicWaitlist />} />
-
-            {/* App pages with layout */}
-            <Route element={<Layout />}>
-                {/* Public pages */}
-                <Route path="/" element={<Landing />} />
-                <Route path="/pricing" element={<Pricing />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/debug" element={<Debug />} />
-
-                {/* Protected pages */}
-                <Route element={<AuthGuard />}>
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/create" element={<CreateWaitlist />} />
-                    <Route path="/waitlist/:id" element={<WaitlistDetail />} />
-                    <Route path="/waitlist/:id/edit" element={<EditWaitlist />} />
-                </Route>
-            </Route>
         </Routes>
     )
 }
